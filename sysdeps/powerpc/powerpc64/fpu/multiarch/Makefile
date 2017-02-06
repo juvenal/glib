@@ -27,7 +27,11 @@ libm-sysdep_routines += s_isnan-power7 s_isnan-power6x s_isnan-power6 \
 			s_llrint-power8 s_llround-power8 s_llroundf-ppc64 \
 			e_expf-power8 e_expf-ppc64 \
 			s_sinf-ppc64 s_sinf-power8 \
-			s_cosf-ppc64 s_cosf-power8
+			s_cosf-ppc64 s_cosf-power8 \
+			slowpow-power7 slowpow-power8 slowpow-power9 slowpow-ppc64 \
+			e_pow-power7 e_pow-power8 e_pow-power9 e_pow-ppc64 \
+			slowexp-power7 slowexp-power8 slowexp-power9 slowexp-ppc64 \
+			e_exp-power7 e_exp-power8 e_exp-power9 e_exp-ppc64
 
 CFLAGS-s_logbf-power7.c = -mcpu=power7
 CFLAGS-s_logbl-power7.c = -mcpu=power7
@@ -36,6 +40,18 @@ CFLAGS-s_modf-power5+.c = -mcpu=power5+
 CFLAGS-s_modff-power5+.c = -mcpu=power5+
 CFLAGS-e_hypot-power7.c = -mcpu=power7
 CFLAGS-e_hypotf-power7.c = -mcpu=power7
+CFLAGS-slowpow-power7.c = -mcpu=power7
+CFLAGS-slowpow-power8.c = -mcpu=power8
+CFLAGS-slowpow-power9.c = -mcpu=power9
+CFLAGS-e_pow-power7.c = -mcpu=power7
+CFLAGS-e_pow-power8.c = -mcpu=power8
+CFLAGS-e_pow-power9.c = -mcpu=power9
+CFLAGS-slowexp-power7.c = -mcpu=power7
+CFLAGS-slowexp-power8.c = -mcpu=power8
+CFLAGS-slowexp-power9.c = -mcpu=power9
+CFLAGS-e_exp-power7.c = -mcpu=power7
+CFLAGS-e_exp-power8.c = -mcpu=power8
+CFLAGS-e_exp-power9.c = -mcpu=power9
 
 # These files quiet sNaNs in a way that is optimized away without
 # -fsignaling-nans.
