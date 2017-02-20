@@ -22,6 +22,28 @@
 #include <elision-conf.h>
 #include <unistd.h>
 
+/* Macros to register the (TLE) transaction lock elision enablement with
+   the new tunables framework.  */
+
+/* Define TLE enablement tunable.  */
+#define ELISION_ENABLE (&__pthread_force_elision)
+/* Define TLE skip lock busy tunable.  */
+#define ELISION_SKIP_LOCK_BUSY (&__elision_aconf.skip_lock_busy)
+/* Define TLE skip lock internal abort tunable.  */
+#define ELISION_SKIP_LOCK_INTERNAL_ABORT \
+  (&__elision_aconf.skip_lock_internal_abort)
+/* Define TLE retries tunable.  */
+#define ELISION_TRIES (&__elision_aconf.retry_try_xbegin)
+/* Define TLE skip trylock internal abort tunable.  */
+#define ELISION_SKIP_TRYLOCK_INTERNAL_ABORT \
+  (&__elision_aconf.skip_trylock_internal_abort)
+/* Define TLE architecture availability check.  */
+#define ELISION_CAN_ENABLE (HAS_CPU_FEATURE (RTM))
+
+/* Perform the integration of TLE with tunables framework. The above macros
+   should be already defined to became available on the framework.  */
+#include "elision-tunables.c"
+
 /* Reasonable initial tuning values, may be revised in the future.
    This is a conservative initial value.  */
 
@@ -48,21 +70,25 @@ struct elision_config __elision_aconf =
    pthread_mutex_lock().  Disabled for suid programs.  Only used when elision
    is available.  */
 
-int __pthread_force_elision attribute_hidden;
+int __pthread_force_elision attribute_hidden = 0;
 
-/* Initialize elison.  */
+/* Initialize elision.  */
 
 static void
 elision_init (int argc __attribute__ ((unused)),
 	      char **argv  __attribute__ ((unused)),
 	      char **environ)
 {
-  int elision_available = HAS_CPU_FEATURE (RTM);
 #ifdef ENABLE_LOCK_ELISION
-  __pthread_force_elision = __libc_enable_secure ? 0 : elision_available;
+   /* Note, if the architecture supports lock elision, it is automatically
+     activated by default, and should be explicitly turned off by setting the
+     appropriate tunable on the supported platform.  */
+  __pthread_force_elision = __libc_enable_secure ? 0 : ELISION_CAN_ENABLE;
+  elision_init_tunables (environ);
 #endif
-  if (!elision_available)
-    __elision_aconf.retry_try_xbegin = 0; /* Disable elision on rwlocks */
+  if (!__pthread_force_elisions)
+    /* Disable elision on rwlocks */
+    __elision_aconf.retry_try_xbegin = 0;
 }
 
 #ifdef SHARED

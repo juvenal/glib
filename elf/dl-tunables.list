@@ -96,4 +96,36 @@ glibc {
       default: HWCAP_IMPORTANT
       }
   }
+  pthread {
+    elision_enable {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_ENABLE
+      security_level: SXID_IGNORE
+    }
+    elision_tries {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_TRIES
+      security_level: SXID_IGNORE
+    }
+    elision_skip_lock_busy {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_SKIP_LOCK_BUSY
+      security_level: SXID_IGNORE
+    }
+    elision_skip_lock_internal_abort {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_SKIP_LOCK_INTERNAL_ABORT
+      security_level: SXID_IGNORE
+    }
+    elision_skip_lock_after_retries {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_SKIP_LOCK_AFTER_RETRIES
+      security_level: SXID_IGNORE
+    }
+    elision_skip_trylock_internal_abort {
+      type: SIZE_T
+      env_alias: PTHREAD_ELISION_SKIP_TRYLOCK_INTERNAL_ABORT
+      security_level: SXID_IGNORE
+    }
+  }
 }

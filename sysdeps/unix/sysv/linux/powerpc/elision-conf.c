@@ -22,6 +22,31 @@
 #include <unistd.h>
 #include <dl-procinfo.h>
 
+/* Macros to register the (TLE) transaction lock elision enablement with
+   the new tunables framework.  */
+
+/* Define TLE enablement tunable.  */
+#define ELISION_ENABLE (&__pthread_force_elision)
+/* Define TLE skip lock busy tunable.  */
+#define ELISION_SKIP_LOCK_BUSY (&__elision_aconf.skip_lock_busy)
+/* Define TLE skip lock internal abort tunable.  */
+#define ELISION_SKIP_LOCK_INTERNAL_ABORT \
+  (&__elision_aconf.skip_lock_internal_abort)
+/* Define TLE skip lock after retries tunable.  */
+#define ELISION_SKIP_LOCK_AFTER_RETRIES \
+  (&__elision_aconf.skip_lock_out_of_tbegin_retries)
+/* Define TLE retries tunable.  */
+#define ELISION_TRIES (&__elision_aconf.try_tbegin)
+/* Define TLE skip trylock internal abort tunable.  */
+#define ELISION_SKIP_TRYLOCK_INTERNAL_ABORT \
+  (&__elision_aconf.skip_trylock_internal_abort)
+/* Define TLE architecture availability check.  */
+#define ELISION_CAN_ENABLE ((GLRO (dl_hwcap2) & PPC_FEATURE2_HAS_HTM))
+
+/* Perform the integration of TLE with tunables framework. The above macros
+   should be already defined to became available on the framework.  */
+#include "elision-tunables.c"
+
 /* Reasonable initial tuning values, may be revised in the future.
    This is a conservative initial value.  */
 
@@ -47,10 +72,11 @@ struct elision_config __elision_aconf =
   };
 
 /* Force elision for all new locks.  This is used to decide whether existing
-   DEFAULT locks should be automatically use elision in pthread_mutex_lock().
-   Disabled for suid programs.  Only used when elision is available.  */
+   DEFAULT locks should be automatically upgraded to elision in
+   pthread_mutex_lock().  Disabled for suid programs.  Only used when elision
+   is available.  */
 
-int __pthread_force_elision attribute_hidden;
+int __pthread_force_elision attribute_hidden = 0;
 
 /* Initialize elision.  */
 
@@ -60,8 +86,11 @@ elision_init (int argc __attribute__ ((unused)),
 	      char **environ)
 {
 #ifdef ENABLE_LOCK_ELISION
-  int elision_available = (GLRO (dl_hwcap2) & PPC_FEATURE2_HAS_HTM) ? 1 : 0;
-  __pthread_force_elision = __libc_enable_secure ? 0 : elision_available;
+  /* Note, if the architecture supports lock elision, it is automatically
+     activated by default, and should be explicitly turned off by setting the
+     appropriate tunable on the supported platform.  */
+  __pthread_force_elision = __libc_enable_secure ? 0 : ELISION_CAN_ENABLE;
+  elision_init_tunables (environ);
 #endif
   if (!__pthread_force_elision)
     /* Disable elision on rwlocks.  */
